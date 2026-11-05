@@ -3,6 +3,7 @@ package logger
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"sync"
@@ -155,7 +156,11 @@ func (l *Logger) Log(level Level, format string, args ...any) {
 
 	t := l.timeNow()
 
+	// WatchZA fork: the line is formatted once here so a stream key can be hidden before
+	// any destination writes it (redact.go).
+	msg := redact(fmt.Sprintf(format, args...))
+
 	for _, dest := range l.destinations {
-		dest.log(t, level, format, args...)
+		dest.log(t, level, "%s", msg)
 	}
 }
