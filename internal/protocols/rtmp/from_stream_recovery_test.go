@@ -69,7 +69,7 @@ func runRecoveryScenario(
 	t.Helper()
 
 	strm := &stream.Stream{
-		Desc:              &description.Session{Medias: medias},
+		OrigDesc:          &description.Session{Medias: medias},
 		WriteQueueSize:    512,
 		RTPMaxPayloadSize: 1450,
 		Parent:            test.NilLogger,
@@ -110,7 +110,8 @@ func runRecoveryScenario(
 	cl := &captureLogger{}
 	r := &stream.Reader{Parent: cl}
 
-	require.NoError(t, FromStream(strm.Desc, r, conn, nconn, 5*time.Second))
+	_, err = FromStream(strm.OrigDesc, strm.OutDescCopy(), r, conn, nconn, 5*time.Second, conn.FourCcList)
+	require.NoError(t, err)
 
 	strm.AddReader(r)
 	defer strm.RemoveReader(r)
